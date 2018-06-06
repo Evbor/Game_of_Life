@@ -7,7 +7,7 @@
 #	This file defines our view object, and if run, creates instances of both our
 #	model and view, activating both of them to run our Game of Life App.
 #
-#	3rd June 2018 Evan Borras
+#	3rd June 2018
 #
 ################################################################################
 
@@ -19,7 +19,7 @@
 #
 
 import tkinter as tk
-import model_inv_vL as model
+import model
 
 #
 # Defining our View Object
@@ -32,7 +32,7 @@ class View(object):
         self.game = game
         self.root = self.create_root()
         self.pause = True
-        self.pause_button = self.create_menu()
+        self.menu_options = self.create_menu()
         self.cells = self.create_cells()
         self.root.after(0, self.animate)
 
@@ -47,18 +47,41 @@ class View(object):
             #root.grid_rowconfigure(i, weight=1)
         return root
 
-    # Creates a Frame menu_frame inside cell (1,0) of root with one resizeable
-    # grid cell (0,0). Creates a Button pause_button inside cell (0,0) of
-    # menu_frame. 
+    # Creates a Frame menu_frame inside cell (1,0) of root with two resizeable
+    # grid cells (0,0) and (0,1). Creates a Button pause_button inside cell 
+    # (0,0) of menu_frame, and a Button random_grid_btn inside cell (0,1) of 
+    # menu_frame.
     # None ---> Button
     def create_menu(self):
+        menu_options = {}
         menu_frame = tk.Frame(self.root)
         menu_frame.grid(row=1, column=0, sticky="NSEW")
-        menu_frame.grid_columnconfigure(0, weight=1)
         menu_frame.grid_rowconfigure(0, weight=1)
+        #making pause button
+        menu_frame.grid_columnconfigure(0, weight=1)
         pause_button = tk.Button(menu_frame, text="Start", command=self.stop_start)
         pause_button.grid(row=0, column=0, sticky="NSEW")
-        return pause_button
+        menu_options['Pause Button'] = pause_button
+        #making random button
+        menu_frame.grid_columnconfigure(1, weight=1)
+        random_grid_btn = tk.Button(menu_frame, text="Random", command=self.randomize)
+        random_grid_btn.grid(row=0, column=1, sticky="NSEW")
+        menu_options['Random Button'] = random_grid_btn
+        ########################################################################
+        #
+        # Add code to make your buttons that belong in the menu bar here.
+        #
+        # Your first line should be menu_frame.grid_columnconfigure(2, weight=1)
+        # this configures the second column of menu_frames grid to be shrinkable
+        # You should then generate your widget add it to menu_frame's cell 
+        # (row=0, column=2). Make sure at the end of generating and configuring
+        # your widget to add it to the dictionary menu_options, which is an
+        # attribute of our View class. Any code that is run when a user
+        # interacts with your widget should be contained in another function 
+        # that you make outside of this function.
+        #
+        ########################################################################
+        return menu_options
 
     # Creates a Frame cell_frame inside cell (0,0) of root with a resizeable
     # grid cell (row,column) corresponding to each (row,column) value in the 
@@ -105,10 +128,14 @@ class View(object):
     def stop_start(self):
         self.pause = not self.pause
         if not self.pause:
-            self.pause_button['text'] = "Pause"
+            self.menu_options['Pause Button']['text'] = "Pause"
             self.animate()
         else:
-            self.pause_button['text'] = "Start"
+            self.menu_options['Pause Button']['text'] = "Start"
+
+    def randomize(self):
+        game.rand()
+        self.update_cells()        
 
     # Updates the color of each Button cells[r][c] to yellow if
     # game.grid[r][c] = 1 (cell is alive) and to blue otherwise.
@@ -130,7 +157,7 @@ class View(object):
         if not self.pause:
             self.game.evolve()
             self.update_cells()
-            self.root.after(15, self.animate)
+            self.root.after(200, self.animate)
 
     # Starts the mainloop of the root window by calling root.mainloop().
     # None ---> None
@@ -139,7 +166,7 @@ class View(object):
 
 
 if __name__ == '__main__':
-    game = model.Model(N=20, generations=2)
+    game = model.Model(20)
     view = View(game)
     view.start()
 
